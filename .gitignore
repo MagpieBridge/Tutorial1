@@ -13,3 +13,14 @@ bin/
 \.settings/org\.eclipse\.jdt\.core\.prefs
 
 src/test/resources/DemoProject/\.settings/
+
+package-lock\.json
+
+vscode/node_modules
+*.vsix
+
+vscode/out/extension\.js
+
+vscode/out/extension\.js\.map
+
+vscode/HelloWorld-1\.0-SNAPSHOT\.jar

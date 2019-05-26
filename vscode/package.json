@@ -42,7 +42,8 @@
 	"scripts": {
 		"vscode:prepublish": "cp ../target/HelloWorld-1.0-SNAPSHOT.jar  HelloWorld-1.0-SNAPSHOT.jar && npm run compile",
 		"compile": "tsc -b",
-		"watch": "tsc -b -w"
+		"watch": "tsc -b -w",
+		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"dependencies": {
 		"vscode-languageclient": "^5.2.1"
