@@ -24,3 +24,5 @@ vscode/out/extension\.js
 vscode/out/extension\.js\.map
 
 vscode/HelloWorld-1\.0-SNAPSHOT\.jar
+
+.settings/org.eclipse.m2e.core.prefs
