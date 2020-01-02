@@ -1,8 +1,3 @@
-import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
-import com.ibm.wala.util.collections.Pair;
-
-import de.upb.soot.jimple.basic.PositionInfo;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -11,6 +6,14 @@ import java.util.Set;
 
 import org.eclipse.lsp4j.DiagnosticSeverity;
 
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.util.collections.Pair;
+
+import magpiebridge.converter.sourceinfo.StmtPositionInfo;
+import magpiebridge.converter.tags.StmtPositionInfoTag;
+import magpiebridge.core.AnalysisResult;
+import magpiebridge.core.Kind;
+import magpiebridge.util.SourceCodeReader;
 import soot.Body;
 import soot.Unit;
 import soot.Value;
@@ -20,11 +23,6 @@ import soot.jimple.InvokeStmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
-
-import magpiebridge.converter.PositionInfoTag;
-import magpiebridge.core.AnalysisResult;
-import magpiebridge.core.Kind;
-import magpiebridge.util.SourceCodeReader;
 
 /**
  * A very simple intra-procedural taint analysis.
@@ -60,7 +58,7 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, Set<Taint>> {
       if (rightOp instanceof InvokeExpr) {
         InvokeExpr invoke = (InvokeExpr) rightOp;
         String sig = invoke.getMethod().getSignature();
-        if (sig.equals("<Demo: java.lang.String source()>")) {
+        if (sig.equals("<tutorial1.Demo: java.lang.String source()>")) {
           Set<Unit> path = new HashSet<>();
           path.add(unit);
           Taint newTaint = new Taint(unit, path, leftOp);
@@ -94,16 +92,16 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, Set<Taint>> {
     if (unit instanceof InvokeStmt) {
       InvokeStmt invokeStmt = (InvokeStmt) unit;
       String sig = invokeStmt.getInvokeExpr().getMethod().getSignature();
-      if (sig.equals("<Demo: void sink(java.lang.String)>")) {
+      if (sig.equals("<tutorial1.Demo: void sink(java.lang.String)>")) {
         for (Taint taint : in) {
           if (invokeStmt.getInvokeExpr().getArgs().contains(taint.getValue())) {
-            PositionInfo sinkPos = ((PositionInfoTag) unit.getTag("PositionInfoTag")).getPositionInfo();
+        	  StmtPositionInfo sinkPos = ((StmtPositionInfoTag) unit.getTag("StmtPositionInfoTag")).getStmtPositionInfo();
             List<Pair<Position, String>> relatedInfo = new ArrayList<>();
             try {
               for (Unit n : taint.getPath()) {
-                PositionInfoTag tag = (PositionInfoTag) n.getTag("PositionInfoTag");
+            	  StmtPositionInfoTag tag = (StmtPositionInfoTag) n.getTag("StmtPositionInfoTag");
                 if (tag != null) {
-                  Position stmtPos = tag.getPositionInfo().getStmtPosition();
+                  Position stmtPos = tag.getStmtPositionInfo().getStmtPosition();
                   String code = SourceCodeReader.getLinesInString(stmtPos);
                   Pair<Position, String> pair = Pair.make(stmtPos, code);
                   if (!relatedInfo.contains(pair))
@@ -114,7 +112,7 @@ public class TaintAnalysis extends ForwardFlowAnalysis<Unit, Set<Taint>> {
               StringBuilder str = new StringBuilder("Found a sensitive flow to sink ");
               str.append("[" + sinkCode + "]");
               str.append(" from source ");
-              PositionInfo sourcePos = ((PositionInfoTag) taint.getSource().getTag("PositionInfoTag")).getPositionInfo();
+              StmtPositionInfo sourcePos = ((StmtPositionInfoTag) taint.getSource().getTag("StmtPositionInfoTag")).getStmtPositionInfo();
               String sourceCode = SourceCodeReader.getLinesInString(sourcePos.getStmtPosition());
               str.append("[" + sourceCode + "].");
               this.results.add(new Result(Kind.Diagnostic, sinkPos.getStmtPosition(), str.toString(), relatedInfo,

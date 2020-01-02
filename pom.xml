@@ -5,7 +5,7 @@
 
 	<groupId>magpiebridge</groupId>
 	<artifactId>HelloWorld</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Tutorial1</name>
@@ -13,8 +13,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<magpiebridge.version>0.0.1-SNAPSHOT</magpiebridge.version>
-		<futuresoot.version>4.0.0.3</futuresoot.version>
+		<magpiebridge.version>0.0.6</magpiebridge.version>
+		<irconverter.version>0.1.0</irconverter.version>
 		<soot.version>3.3.0</soot.version>
 	</properties>
 
@@ -25,11 +25,11 @@
 			<artifactId>magpiebridge</artifactId>
 			<version>${magpiebridge.version}</version>
 		</dependency>
-		<!-- futuresoot -->
+		<!-- IRConverter -->
 		<dependency>
-			<groupId>de.upb</groupId>
-			<artifactId>Soot</artifactId>
-			<version>${futuresoot.version}</version>
+			<groupId>magpiebridge</groupId>
+			<artifactId>irconverter</artifactId>
+			<version>${irconverter.version}</version>
 		</dependency>
 		<!-- soot -->
 		<dependency>
@@ -42,17 +42,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
-		</dependency>
-		<!-- dependencies of wala -->
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.core.runtime</artifactId>
-			<version>3.15.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jdt</groupId>
-			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>3.15.0</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -101,12 +90,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	<repositories>
-		<repository>
-			<id>wala</id>
-			<name>wala snapshots</name>
-			<url>https://soot-build.cs.uni-paderborn.de/nexus/repository/wala/</url>
-		</repository>
-	</repositories>
 </project>
 

@@ -1,14 +1,7 @@
-import com.ibm.wala.classLoader.Module;
-
-import de.upb.soot.core.SootClass;
-import de.upb.soot.frontends.java.WalaClassLoader;
-
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -16,19 +9,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
-import soot.G;
-import soot.PackManager;
-import soot.Scene;
-import soot.Transform;
-import soot.Transformer;
-import soot.options.Options;
+import com.ibm.wala.classLoader.Module;
 
-import magpiebridge.converter.JimpleConverter;
+import magpiebridge.converter.WalaToSootIRConverter;
 import magpiebridge.core.AnalysisResult;
 import magpiebridge.core.IProjectService;
 import magpiebridge.core.MagpieServer;
 import magpiebridge.core.ServerAnalysis;
 import magpiebridge.projectservice.java.JavaProjectService;
+import soot.PackManager;
+import soot.Transform;
+import soot.Transformer;
 
 /**
  * 
@@ -52,7 +43,7 @@ public class SimpleServerAnalysis implements ServerAnalysis {
   }
 
   @Override
-  public void analyze(Collection<Module> files, MagpieServer server) {
+  public void analyze(Collection<? extends Module> files, MagpieServer server, boolean rerun) {
 
     if (last != null && !last.isDone()) {
       last.cancel(false);
@@ -97,30 +88,11 @@ public class SimpleServerAnalysis implements ServerAnalysis {
     }
   }
 
-  private void initilizeSootOptions(Set<String> libPath) {
-    G.v().reset();
-    // TODO. The commented lines set up call graph algorithm if you want to do whole program analysis.
-    // Options.v().setPhaseOption("cg.spark", "on");
-    // Options.v().setPhaseOption("cg", "all-reachable:true");
-    Options.v().set_soot_classpath(getLongLibPath(libPath));
-    Options.v().set_output_format(Options.output_format_none);
-    Options.v().set_no_bodies_for_excluded(true);
-    Options.v().set_allow_phantom_refs(true);
-    Options.v().set_prepend_classpath(true);
-    Options.v().set_full_resolver(true);
-  }
 
   public Collection<AnalysisResult> analyze(Set<String> srcPath, Set<String> libPath) {
-    // Load library classes with soot
-    initilizeSootOptions(libPath);
-    Scene.v().loadNecessaryClasses();
-
-    // Load application classes with wala and uses the IR converter to convert them to Jimple.
-    WalaClassLoader loader = new WalaClassLoader(srcPath, libPath, null);
-    List<SootClass> sootClasses = loader.getSootClasses();
-    JimpleConverter jimpleConverter = new JimpleConverter(sootClasses);
-    jimpleConverter.convertAllClasses();
-
+    // Uses the IRConverter to convert WALA IR to Jimple.
+    WalaToSootIRConverter converter = new WalaToSootIRConverter(srcPath, libPath, null);
+    converter.convert();
     // Create an transformer which performs the actual analysis.
     SimpleTransformer transformer = new SimpleTransformer();
     runSootPacks(transformer);
@@ -132,19 +104,5 @@ public class SimpleServerAnalysis implements ServerAnalysis {
     Transform transform = new Transform("jtp.analysis", t);
     PackManager.v().getPack("jtp").add(transform);
     PackManager.v().runBodyPacks();
-
-    // TODO. The commented lines add transform to wjtp and apply cg and wjtp if you want to do whole program analysis.
-    // PackManager.v().getPack("wjtp").add(new Transform("wjtp.analysis", t));
-    // PackManager.v().getPack("cg").apply();
-    // PackManager.v().getPack("wjtp").apply();
-  }
-
-  private String getLongLibPath(Set<String> libPath) {
-    StringBuilder strBuilder = new StringBuilder();
-    for (String lib : libPath) {
-      strBuilder.append(lib);
-      strBuilder.append(File.pathSeparator);
-    }
-    return strBuilder.toString();
   }
 }

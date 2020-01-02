@@ -3,7 +3,7 @@
 	"description": "A HelloWorld example with MagpieBridge",
 	"author": "Linghui Luo ",
 	"license": "EPL-2.0",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/MagpieBridge/Tutorial1.git"
@@ -40,7 +40,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "cp ../target/HelloWorld-1.0-SNAPSHOT.jar  HelloWorld-1.0-SNAPSHOT.jar && npm run compile",
+		"vscode:prepublish": "cp ../target/HelloWorld-0.0.2-SNAPSHOT.jar  HelloWorld-0.0.2-SNAPSHOT.jar && npm run compile",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "node ./node_modules/vscode/bin/install"
