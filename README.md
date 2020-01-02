@@ -1,18 +1,18 @@
-# Tutorial1
-In this tutorial we show you how to integrate a soot-based analysis into IDEs with MagpieBridge (Please use the [ECOOP19 release](https://github.com/MagpieBridge/MagpieBridge/releases/tag/ECOOP19) for this tutorial.) 
+In this tutorial we show you how to integrate a soot-based analysis into IDEs with MagpieBridge.
 
 The tutorial project can be found on [`https://github.com/MagpieBridge/Tutorial1.git`](https://github.com/MagpieBridge/Tutorial1)
 
 1. Create an empty maven project
-2. Add dependencies as specified in this [pom.xml](https://github.com/MagpieBridge/Tutorial1/blob/master/pom.xml)
+2. Add dependencies ([MagpieBridge](https://github.com/MagpieBridge/MagpieBridge), [IRConverter](https://github.com/MagpieBridge/IRConverter) and [Soot](https://github.com/Sable/soot)) as specified in this [pom.xml](https://github.com/MagpieBridge/Tutorial1/blob/master/pom.xml)
 3. Create a main class [``HelloWorld.java``](https://github.com/MagpieBridge/Tutorial1/blob/master/src/main/java/HelloWorld.java) which creates an instance of `magpiebridge.core.MagpieServer`. The main method should look like this. It adds a `magpiebridge.projectservice.java.JavaProjectService` and a `SimpleServerAnalysis` to the server. `JavaProjectService` is used for resolving source code path and library code path of a Java project. 
 ~~~
-    MagpieServer server = new MagpieServer();
+    MagpieServer server = new MagpieServer(new ServerConfiguration());
     String language = "java";
     IProjectService javaProjectService = new JavaProjectService();
     server.addProjectService(language, javaProjectService);
-    ServerAnalysis analysis = new SimpleServerAnalysis();
-    server.addAnalysis(language, analysis);
+    ServerAnalysis myAnalysis = new SimpleServerAnalysis();
+    Either<ServerAnalysis, ToolAnalysis> analysis=Either.forLeft(myAnalysis);
+	server.addAnalysis(analysis,language);
     server.launchOnStdio();
 ~~~
 
@@ -20,19 +20,16 @@ The tutorial project can be found on [`https://github.com/MagpieBridge/Tutorial1
 The results of the analysis must implement `magpiebridge.core.AnalysisResult`, see [`Result.java`](https://github.com/MagpieBridge/Tutorial1/blob/master/src/main/java/Result.java). The source code position from wala is preserved in each corresponding Jimple Unit in form of Tag. Use the following lines to get the source code position of a Jimple Unit (see usage in [`TaintAnalyis.java`](https://github.com/MagpieBridge/Tutorial1/blob/master/src/main/java/TaintAnalysis.java)).
 ~~~ 
     Unit n = ...;
-    PositionInfoTag tag = (PositionInfoTag) n.getTag("PositionInfoTag");
-    Position stmtPos = tag.getPositionInfo().getStmtPosition();
+    StmtPositionInfoTag tag = (StmtPositionInfoTag) n.getTag("StmtPositionInfoTag");
+    Position stmtPos = tag.getStmtPositionInfo().getStmtPosition();
 ~~~ 
-You can also get precise operand position with `tag.getPositionInfo().getOperandPosition(index)`.
+You can also get precise operand position with `tag.getStmtPositionInfo().getOperandPosition(index)`.
 
 5. Create a class [`SimpleServerAnalysis.java`](https://github.com/MagpieBridge/Tutorial1/blob/master/src/main/java/SimpleServerAnalysis.java) which implements `magpiebridge.core.ServerAnalysis`.
-Frist, you should set up soot options and use soot to load library classes. 
-Second, you need the following lines to parse java source code with wala and load application classes into the soot Scene.
+Use the [IRConverter](https://github.com/MagpieBridge/IRConverter) to parse java source code with wala and load application classes into the soot Scene.
 ~~~
-    WalaClassLoader loader = new WalaClassLoader(srcPath, libPath, null);
-    List<SootClass> sootClasses = loader.getSootClasses();
-    JimpleConverter jimpleConverter = new JimpleConverter(sootClasses);
-    jimpleConverter.convertAllClasses(); 
+    WalaToSootIRConverter converter = new WalaToSootIRConverter(srcPath, libPath, null);
+    converter.convert();
 ~~~
 If you don't need very precise source code position, you can also just use soot to load all classes (bytecode). However, then you can only get line numbers. 
 
@@ -47,8 +44,7 @@ If you don't need very precise source code position, you can also just use soot 
 
 8. `mvn install` in the project root. 
 
-9. A jar file will be created in the `target` directory. If you built the tutorial project, it is `HelloWorld-1.0-SNAPSHOT.jar`. 
-
+9. A jar file will be created in the `target` directory.
 10. Use this jar file as langauge server in IDEs.
 
 11. We show how to run this HelloWorld server in Eclipse and Visual Studio Code, configurations for other IDEs or editors can be found [here](https://github.com/MagpieBridge/CryptoLSPDemo)
@@ -76,7 +72,7 @@ cd PATH\\TO\\vscode
 npm install
 npm install -g vsce
 vsce package
-code --install-extension HelloWorld-0.0.1.vsix
+code --install-extension HelloWorld-0.0.2.vsix
 ~~~
 - In Visual Studio Code it shows the data-flow path as related information in the warning messsage.
 ![](https://github.com/MagpieBridge/MagpieBridge/blob/develop/doc/warningvscode.png)
