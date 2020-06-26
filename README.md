@@ -6,14 +6,17 @@ The tutorial project can be found on [`https://github.com/MagpieBridge/Tutorial1
 2. Add dependencies ([MagpieBridge](https://github.com/MagpieBridge/MagpieBridge), [IRConverter](https://github.com/MagpieBridge/IRConverter) and [Soot](https://github.com/Sable/soot)) as specified in this [pom.xml](https://github.com/MagpieBridge/Tutorial1/blob/master/pom.xml)
 3. Create a main class [``HelloWorld.java``](https://github.com/MagpieBridge/Tutorial1/blob/master/src/main/java/HelloWorld.java) which creates an instance of `magpiebridge.core.MagpieServer`. The main method should look like this. It adds a `magpiebridge.projectservice.java.JavaProjectService` and a `SimpleServerAnalysis` to the server. `JavaProjectService` is used for resolving source code path and library code path of a Java project. 
 ~~~
-    MagpieServer server = new MagpieServer(new ServerConfiguration());
-    String language = "java";
-    IProjectService javaProjectService = new JavaProjectService();
-    server.addProjectService(language, javaProjectService);
-    ServerAnalysis myAnalysis = new SimpleServerAnalysis();
-    Either<ServerAnalysis, ToolAnalysis> analysis=Either.forLeft(myAnalysis);
-	server.addAnalysis(analysis,language);
-    server.launchOnStdio();
+   Supplier<MagpieServer> createServer = () -> {
+      MagpieServer server = new MagpieServer(new ServerConfiguration());
+      String language = "java";
+      IProjectService javaProjectService = new JavaProjectService();
+      server.addProjectService(language, javaProjectService);
+      ServerAnalysis myAnalysis = new SimpleServerAnalysis();
+      Either<ServerAnalysis, ToolAnalysis> analysis = Either.forLeft(myAnalysis);
+      server.addAnalysis(analysis, language);
+      return server;
+    };
+    createServer.get().launchOnStdio();
 ~~~
 
 4. Create a class [`SimpleTransformer.java`](https://github.com/MagpieBridge/Tutorial1/blob/master/src/main/java/SimpleTransformer.java) which performs a very simple intra-procedural [Taint Analysis](https://github.com/MagpieBridge/Tutorial1/blob/master/src/main/java/TaintAnalysis.java) using soot. 
