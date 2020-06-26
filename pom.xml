@@ -13,8 +13,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<magpiebridge.version>0.0.6</magpiebridge.version>
-		<irconverter.version>0.1.0</irconverter.version>
+		<magpiebridge.version>0.0.8</magpiebridge.version>
+		<irconverter.version>0.1.6</irconverter.version>
 		<soot.version>3.3.0</soot.version>
 	</properties>
 
@@ -37,6 +37,7 @@
 			<artifactId>soot</artifactId>
 			<version>${soot.version}</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

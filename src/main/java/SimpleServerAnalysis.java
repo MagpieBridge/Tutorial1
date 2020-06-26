@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import com.ibm.wala.classLoader.Module;
 
 import magpiebridge.converter.WalaToSootIRConverter;
+import magpiebridge.core.AnalysisConsumer;
 import magpiebridge.core.AnalysisResult;
 import magpiebridge.core.IProjectService;
 import magpiebridge.core.MagpieServer;
@@ -43,8 +44,8 @@ public class SimpleServerAnalysis implements ServerAnalysis {
   }
 
   @Override
-  public void analyze(Collection<? extends Module> files, MagpieServer server, boolean rerun) {
-
+  public void analyze(Collection<? extends Module> files, AnalysisConsumer consumer, boolean rerun) {
+    
     if (last != null && !last.isDone()) {
       last.cancel(false);
       if (last.isCancelled())
@@ -53,6 +54,7 @@ public class SimpleServerAnalysis implements ServerAnalysis {
     Future<?> future = exeService.submit(new Runnable() {
       @Override
       public void run() {
+        MagpieServer server=(MagpieServer) consumer;
         setClassPath(server);
         Collection<AnalysisResult> results = Collections.emptyList();
         if (srcPath != null) {
